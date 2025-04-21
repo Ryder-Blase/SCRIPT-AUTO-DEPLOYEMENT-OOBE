@@ -463,6 +463,10 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v verb
 echo Suppression de NDU (Network Monitoring Servides)
 reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Ndu" /f >nul 2>&1
 
+echo Executive Tweak
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Executive" /v AdditionalCriticalWorkerThreads /t REG_DWORD /d "%NUMBER_OF_PROCESSORS%" /f
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\Executive" /v AdditionalDelayedWorkerThreads /t REG_DWORD /d "%NUMBER_OF_PROCESSORS%" /f
+
 echo Application de WLAN Tweaks...
 reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v L2NAWLANMode /t REG_DWORD /d 0 /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v AllowAPMode /t REG_BINARY /d 01000000 /f >nul 2>&1
