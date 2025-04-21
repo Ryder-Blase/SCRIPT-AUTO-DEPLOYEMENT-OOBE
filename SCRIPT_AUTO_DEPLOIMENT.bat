@@ -322,6 +322,13 @@ echo Desactivation et arret du service de telemetrie 'DiagTrack'...
 sc config "DiagTrack" start=disabled >nul 2>&1
 sc stop "DiagTrack" >nul 2>&1
 
+echo Desactivation et arret des services de telemetrie...
+sc config "DiagTrack" start=disabled >nul 2>&1
+sc stop "DiagTrack" >nul 2>&1
+sc stop dmwappushservice >nul 2>&1
+sc config dmwappushservice start=disabled >nul 2>&1
+echo "" > %ProgramData%\Microsoft\Diagnosis\ETLLogs\AutoLogger\AutoLogger-Diagtrack-Listener.etl
+
 
 echo Desactivation de Windows Spotlight features...
 reg add "HKCU\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsSpotlightFeatures /t REG_DWORD /d 1 /f >nul 2>&1
@@ -394,6 +401,9 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Control" /v SvcHostSplitThresholdInKB /t 
 
 echo Changement des priorite CPU du Scheduler...
 reg add "HKLM\SYSTEM\ControlSet001\Control\PriorityControl" /v Win32PrioritySeparation /t REG_DWORD /d 38 /f >nul 2>&1
+
+echo Suppression de NDU (Network Monitoring Servides)
+reg delete "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Ndu" /f >nul 2>&1
 
 echo Application de WLAN Tweaks...
 reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v L2NAWLANMode /t REG_DWORD /d 0 /f >nul 2>&1
