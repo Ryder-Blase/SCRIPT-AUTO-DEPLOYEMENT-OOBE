@@ -457,6 +457,10 @@ echo Activation de FSE (Fullscreen Exclusive)
 reg add "HKCU\System\GameConfigStore" /v "GameDVR_HonorUserFSEBehaviorMode" /t REG_DWORD /d 1 /f >nul 2>&1
 reg add "HKCU\System\GameConfigStore" /v "GameDVR_DXGIHonorFSEWindowsCompatible" /t REG_DWORD /d 1 /f >nul 2>&1
 
+echo Activation de Windowed Game Optimizations
+REG ADD "HKEY_CURRENT_USER\Software\Microsoft\DirectX\GraphicsSettings" /v "SwapEffectUpgradeCache" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_CURRENT_USER\Software\Microsoft\DirectX\UserGpuPreferences" /v "DirectXUserGlobalSettings" /t REG_SZ /d "SwapEffectUpgradeEnable=1;" /f
+
 echo Activation de Verbose...
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v verbosestatus /t REG_DWORD /d 1 /f >nul 2>&1
 
@@ -473,6 +477,13 @@ reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v AllowAPMode /t REG_BINARY /d 010000
 reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v DisableBackgroundScanOptimization /t REG_DWORD /d 1 /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v ShowDeniedNetworks /t REG_DWORD /d 1 /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v AllowVirtualStationExtensibility /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo SerializeTimerExpiration Tweaks
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Kernel" /v SerializeTimerExpiration /t REG_DWORD /d 1 /f
+
+echo Interrupt Steering Tweaks
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" /v "InterruptSteeringMode" /t REG_DWORD /d 1 /f
+REG ADD "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\kernel" /v "InterruptSteeringTargetProc" /t REG_DWORD /d 1 /f
 
 echo Application de Disk Tweaks...
 fsutil behavior set disableLastAccess 1 >NUL 2>nul
@@ -620,8 +631,7 @@ reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v 
 reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v DefaultAccountSAMName /f >nul 2>&1
 reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v DefaultAccountSID /f >nul 2>&1
 net user /del defaultuser0 >nul 2>&1
-net user /add PC >nul 2>&1
-net localgroup Administrateurs /add PC >nul 2>&1
+net user Administrateur /active:yes
 
 echo Decharger la ruche...
 reg unload "HKLM\DefUser" >nul 2>&1
