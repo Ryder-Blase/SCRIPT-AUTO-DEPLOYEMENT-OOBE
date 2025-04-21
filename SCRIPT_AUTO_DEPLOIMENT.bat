@@ -103,10 +103,6 @@ powershell -Command "Rename-Computer -NewName "%PCNAME%" -Force" >nul 2>&1
  setlocal enabledelayedexpansion
  set apps=^
  3DBuilder;^
- xbox;^
- Microsoft.Xbox.TCUI;^
- Microsoft.XboxIdentityProvider;^
- Microsoft.XboxSpeechTotextOverlay;^
  OneNote;^
  SkypeApp;^
  People;^
@@ -117,11 +113,8 @@ powershell -Command "Rename-Computer -NewName "%PCNAME%" -Force" >nul 2>&1
  BingNews;^
  BingWeather;^
  Microsoft.BingSearch;^
- Microsoft.XboxGamingOverlay;^
  linkedin;^
- Microsoft.GamingApp;^
  Microsoft.PowerAutomateDesktop;^
- Microsoft.StorePurchaseApp;^
  HolographicFirstRun;^
  Microsoft.GetHelp;^
  Microsoft.Getstarted;^
