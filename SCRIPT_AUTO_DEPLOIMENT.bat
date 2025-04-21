@@ -15,13 +15,7 @@ if errorlevel 1 (
 )
 
 setlocal EnableDelayedExpansion
-
-echo.                  
-echo.                    _.-;;-._
-echo.             '-..-'|   ||   |
-echo.             '-..-'|_.-;;-._|
-echo.             '-..-'|   ||   |
-echo.             '-..-'|_.-''-._|
+                  
 echo.
 echo            Script Windows by Ryder-Blase     
 echo          ==================================
