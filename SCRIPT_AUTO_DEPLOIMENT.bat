@@ -521,7 +521,6 @@ fsutil behavior set mftzone 2 >NUL 2>nul
 fsutil behavior set disabledeletenotify 0 >NUL 2>nul
 fsutil behavior set encryptpagingfile 0 >NUL 2>nul
 fsutil behavior set disable8dot3 1 >NUL 2>nul
-fsutil behavior set disable8dot3 1 >nul
 call :ControlSet "Control\FileSystem" "NtfsDisable8dot3NameCreation" "1"
 
 fsutil behavior set disablecompression 1 >nul
@@ -543,7 +542,7 @@ goto :EOF
 :ControlSet
 rem Set registry key values
 rem Parameters: %1 - registry path, %2 - key name, %3 - key value
-reg add "HKLM\SYSTEM\CurrentControlSet\%1" /v %2 /t REG_DWORD /d %3 /f
+reg add "HKLM\SYSTEM\CurrentControlSet\%1" /v %2 /t REG_DWORD /d %3 /f >nul 2>&1
 
 
 echo Reinitilisation de Hibernation...
