@@ -500,8 +500,8 @@ reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v 
 reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v DefaultAccountSAMName /f >nul 2>&1
 reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v DefaultAccountSID /f >nul 2>&1
 net user /del defaultuser0 >nul 2>&1
-net user /add MOVLOCALPC >nul 2>&1
-net localgroup Administrateurs /add MOVLOCALPC >nul 2>&1
+net user /add PC >nul 2>&1
+net localgroup Administrateurs /add PC >nul 2>&1
 
 echo Decharger la ruche...
 reg unload "HKLM\DefUser" >nul 2>&1
