@@ -526,13 +526,30 @@ fsutil behavior set mftzone 2 >NUL 2>nul
 fsutil behavior set disabledeletenotify 0 >NUL 2>nul
 fsutil behavior set encryptpagingfile 0 >NUL 2>nul
 fsutil behavior set disable8dot3 1 >NUL 2>nul
-call :ControlSet "Control\FileSystem" "NtfsDisable8dot3NameCreation" "1" 
-fsutil behavior set disablecompression 1 >NUL 2>nul
+fsutil behavior set disable8dot3 1 >nul
+call :ControlSet "Control\FileSystem" "NtfsDisable8dot3NameCreation" "1"
+
+fsutil behavior set disablecompression 1 >nul
+
 wmic logicaldisk where "DriveType='3' and DeviceID='%systemdrive%'" get DeviceID 2>&1 | find "%systemdrive%" >nul && set "storageType=SSD" || set "storageType=HDD"
-if "%storageType%" equ "SSD" (fsutil behavior set disableLastAccess 0
-call :ControlSet "Control\FileSystem" "NtfsDisableLastAccessUpdate" "2147483648") >NUL 2>nul
-if "%storageType%" equ "HDD" (fsutil behavior set disableLastAccess 1
-call :ControlSet "Control\FileSystem" "NtfsDisableLastAccessUpdate" "2147483649") >NUL 2>nul
+
+if "%storageType%" equ "SSD" (
+    fsutil behavior set disableLastAccess 0
+    call :ControlSet "Control\FileSystem" "NtfsDisableLastAccessUpdate" "2147483648"
+) >nul
+
+if "%storageType%" equ "HDD" (
+    fsutil behavior set disableLastAccess 1
+    call :ControlSet "Control\FileSystem" "NtfsDisableLastAccessUpdate" "2147483649"
+) >nul
+
+goto :EOF
+
+:ControlSet
+rem Set registry key values
+rem Parameters: %1 - registry path, %2 - key name, %3 - key value
+reg add "HKLM\SYSTEM\CurrentControlSet\%1" /v %2 /t REG_DWORD /d %3 /f
+
 
 echo Reinitilisation de Hibernation...
 powercfg -h off >nul 2>&1
