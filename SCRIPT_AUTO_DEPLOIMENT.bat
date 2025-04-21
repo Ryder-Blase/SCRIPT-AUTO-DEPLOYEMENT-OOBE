@@ -89,10 +89,10 @@ reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInfo
 reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportPhone /f >nul 2>&1
 reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportURL /f >nul 2>&1
 reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Logo /f >nul 2>&1
-start "" "C:\Windows\Resources\Themes\ThemeC.theme" >nul 2>&1
+start "" "C:\Windows\Resources\Themes\dark.theme" >nul 2>&1
 timeout 1 >nul 2>&1
 taskkill /f /im SystemSettings.exe >nul 2>&1
-reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\Themes" /v "CurrentTheme" /t REG_SZ /d "C:\Windows\Resources\Themes\ThemeC.theme" /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\Themes" /v "CurrentTheme" /t REG_SZ /d "C:\Windows\Resources\Themes\dark.theme" /f >nul 2>&1
 
  
 echo Changement du Nom du PC...
