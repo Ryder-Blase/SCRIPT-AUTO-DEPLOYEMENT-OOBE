@@ -1,0 +1,513 @@
+@echo off
+
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Ce script doit etre execute en tant qu’administrateur.
+    pause
+    exit /b
+)
+
+ver | findstr /i "10.0" >nul
+if errorlevel 1 (
+    echo Ce script est conçu uniquement pour Windows 10/11.
+    pause
+    exit /b
+)
+
+setlocal EnableDelayedExpansion
+
+echo.                  
+echo.                    _.-;;-._
+echo.             '-..-'|   ||   |
+echo.             '-..-'|_.-;;-._|
+echo.             '-..-'|   ||   |
+echo.             '-..-'|_.-''-._|
+echo.
+echo            Script Windows by Ryder-Blase     
+echo          ==================================
+echo.
+
+
+echo Charger la ruche du User Default...
+reg load "HKLM\DefUser" "C:\Users\Default\NTUSER.DAT" >nul 2>&1
+
+echo Bypass du System Requirements de Windows 11...
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\UnsupportedHardwareNotificationCache" /v SV1 /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\UnsupportedHardwareNotificationCache" /v SV2 /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Control Panel\UnsupportedHardwareNotificationCache" /v SV1 /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Control Panel\UnsupportedHardwareNotificationCache" /v SV2 /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\UnsupportedHardwareNotificationCache" /v SV1 /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\UnsupportedHardwareNotificationCache" /v SV2 /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\LabConfig" /v BypassCPUCheck /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\LabConfig" /v BypassRAMCheck /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\LabConfig" /v BypassSecureBootCheck /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\LabConfig" /v BypassStorageCheck /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\LabConfig" /v BypassTPMCheck /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\MoSetup" /v AllowUpgradesWithUnsupportedTPMOrCPU /t REG_DWORD /d 1 /f >nul 2>&1
+
+echo Supprimer Microsoft Edge...
+ reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge" /f >nul 2>&1
+ reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge Update" /f >nul 2>&1
+
+ set "service_names=edgeupdate edgeupdatem"
+ for %%n in (%service_names%) do (
+ sc stop %%n >NUL 2>&1
+ sc delete %%n >NUL 2>&1
+ reg delete "HKLM\SYSTEM\CurrentControlSet\Services\%%n" /f >NUL 2>&1
+ )
+
+ for /f "skip=1 tokens=1 delims=," %%a in ('schtasks /query /fo csv') do (
+  for %%b in (%%a) do (
+   if "%%b"=="MicrosoftEdge" schtasks /delete /tn "%%~a" /f >NUL 2>&1))
+
+ where /q "%ProgramFiles(x86)%\Microsoft\Edge\Application:*"
+ if %errorlevel% neq 0 goto uninst_wv
+ start /w "" "%~dp0\Uninstall_Edge\Setup_Edge.exe" --uninstall --system-level --force-uninstall
+
+ :uninst_wv
+ echo Supprimer WebView
+ where /q "%ProgramFiles(x86)%\Microsoft\EdgeWebView\Application:*"
+ if %errorlevel% neq 0 goto cleanup_wv_junk
+ start /w "" "%~dp0\Uninstall_Edge\Setup_Edge.exe" --uninstall --msedgewebview --system-level --force-uninstall
+
+ :cleanup_wv_junk
+ for /f "delims=" %%d in ('dir /ad /b /s "%ProgramFiles(x86)%\Microsoft\EdgeWebView" 2^>NUL ^| sort /r') do rd "%%d" 2>NUL
+
+ taskkill /im MicrosoftEdgeUpdate.exe /f >NUL 2>&1
+ rd /s /q "%ProgramFiles(x86)%\Microsoft\Edge" >NUL 2>&1
+ rd /s /q "%ProgramFiles(x86)%\Microsoft\EdgeCore" >NUL 2>&1
+ rd /s /q "%ProgramFiles(x86)%\Microsoft\EdgeUpdate" >NUL 2>&1
+ rd /s /q "%ProgramFiles(x86)%\Microsoft\Temp" >NUL 2>&1
+ rd /s /q "%AllUsersProfile%\Microsoft\EdgeUpdate" >NUL 2>&1
+ rd /s /q "%SystemRoot%\System32\MicrosoftEdgeCP.exe" >NUL 2>&1
+ del /s /q "%AllUsersProfile%\Microsoft\Windows\Start Menu\Programs\Microsoft Edge.lnk" >NUL 2>&1
+ rd /s /q "%ProgramData%\Microsoft\Windows\Start Menu\Programs\Microsoft Edge" >NUL 2>&1
+ reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge" /f >NUL 2>&1
+ reg delete "HKLM\SOFTWARE\WOW6432Node\Microsoft\Edge" /f >NUL 2>&1
+ reg delete "HKCU\Software\Microsoft\Edge" /f >nul 2>&1
+ reg add "HKLM\SOFTWARE\Policies\Microsoft\EdgeUpdate" /v DoNotUpdateToEdgeWithChromium /t REG_DWORD /d 1 /f >nul 2>&1
+ del /s /q "%PUBLIC%\Desktop\Microsoft Edge.lnk" >nul 2>&1
+
+echo Changement des OEM information...
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Manufacturer /f >nul 2>&1
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Model /f >nul 2>&1
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportHours /f >nul 2>&1
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportPhone /f >nul 2>&1
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v SupportURL /f >nul 2>&1
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v Logo /f >nul 2>&1
+start "" "C:\Windows\Resources\Themes\ThemeC.theme" >nul 2>&1
+timeout 1 >nul 2>&1
+taskkill /f /im SystemSettings.exe >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\Themes" /v "CurrentTheme" /t REG_SZ /d "C:\Windows\Resources\Themes\ThemeC.theme" /f >nul 2>&1
+
+ 
+echo Changement du Nom du PC...
+set /p PCNAME=Nom du PC :
+powershell -Command "Rename-Computer -NewName "%PCNAME%" -Force" >nul 2>&1
+
+echo Suppression des apps inutiles...
+setlocal enabledelayedexpansion
+set apps=^
+3DBuilder;^
+xbox;^
+Microsoft.Xbox.TCUI;^
+Microsoft.XboxIdentityProvider;^
+Microsoft.XboxSpeechTotextOverlay;^
+OneNote;^
+SkypeApp;^
+People;^
+ZuneMusic;^
+ZuneVideo;^
+MicrosoftSolitaireCollection;^
+BingNews;^
+BingWeather;^
+Microsoft.BingSearch;^
+Microsoft.XboxGamingOverlay;^
+linkedin;^
+Microsoft.GamingApp;^
+Microsoft.PowerAutomateDesktop;^
+Microsoft.StorePurchaseApp;^
+HolographicFirstRun;^
+Microsoft.GetHelp;^
+Microsoft.Getstarted;^
+Microsoft.MicrosoftStickyNotes;^
+Microsoft.MixedReality.Portal;^
+Microsoft.Microsoft3DViewer;^
+Microsoft.Windows.DevHome;^
+Microsoft.MicrosoftOfficeHub;^
+Microsoft.Copilot;^
+Copilot;^
+OneConnect;^
+Clipchamp;^
+soundrecorder;^
+Microsoft.WindowsFeedbackHub
+for %%A in (%apps%) do (
+    echo Supression de %%A...
+    powershell -Command "Get-AppxPackage -AllUsers *%%A* | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue" >nul 2>&1
+    REM (Sysprep bug) powershell -Command "Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like '*%%A*' | Remove-AppxProvisionedPackage -AllUsers -Online -ErrorAction SilentlyContinue" >nul 2>&1
+)
+
+echo Suppression des Widgets Windows...
+powershell -Command "Get-AppxPackage *WebExperience* | Remove-AppxPackage -AllUsers" >nul 2>&1
+REM (Sysprep bug) powershell -Command "Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like "*WebExperience*" | Remove-AppxProvisionedPackage -Online -AllUsers" >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Dsh" /v AllowNewsAndInterests /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" /v EnableFeeds /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarDa /t REG_DWORD /d 0 /f >nul 2>&1
+
+
+echo Desactiver la reinstallation de DevHome...
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Orchestrator\UScheduler\DevHomeUpdate" /v workCompleted /t REG_DWORD /d 1 /f >nul 2>&1
+reg delete "HKLM\SOFTWARE\Microsoft\WindowsUpdate\Orchestrator\UScheduler_Oobe\DevHomeUpdate" /f >nul 2>&1
+
+echo Suppression de OneDrive...
+C:\Windows\System32\OneDriveSetup.exe /uninstall >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\OneDrive" /v DisableFileSyncNGSC /t REG_DWORD /d 1 /f >nul 2>&1
+
+
+echo Installation des Logiciels depuis SRV-FICHIERS...
+setlocal
+set EXE_FOLDER=%~dp0\Basic_installers
+ for %%F in ("%EXE_FOLDER%\*.exe") do (
+    echo Running %%F
+    start "" "%%F"
+ )
+endlocal
+
+ setlocal
+ set MSI_FOLDER=%~dp0\Basic_installers
+ for %%F in ("%MSI_FOLDER%\*.msi") do (
+    echo Running %%F
+    start "" "%%F"
+ )
+ endlocal
+
+echo Installation de Chrome...
+powershell -Command "Invoke-WebRequest -Uri 'https://dl.google.com/chrome/install/latest/chrome_installer.exe' -OutFile '%TEMP%\chrome_installer.exe'" >nul 2>&1
+start /wait "" "%TEMP%\chrome_installer.exe" /silent /install >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\ftp\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.htm\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.html\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.shtml\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.webp\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.xht\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.xhtml\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.xml\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.pdf\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.svf\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
+
+echo Desactivation des Sponsored Apps (applications sponsorisees pour prevenir les pubs et les apps non desire)...
+
+echo Desactivation de WindowsConsumerFeatures...
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsConsumerFeatures /t REG_DWORD /d 1 /f >nul 2>&1
+
+echo Desactivation du Content Delivery Manager pour l'utilisateur courant...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v ContentDeliveryAllowed /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation du Content Delivery Manager pour le profil par defaut...
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v ContentDeliveryAllowed /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Configuration des epingles du menu demarrer...
+reg add "HKLM\SOFTWARE\Microsoft\PolicyManager\current\device\Start" /v ConfigureStartPins /t REG_SZ /d "{\"pinnedList\": [{}]}" /f >nul 2>&1
+
+echo Desactivation des fonctionnalites de gestion de contenu (utilisateur courant)...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v FeatureManagementEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation des applications OEM preinstallees...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v OemPreInstalledAppsEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation de l'activation precedente des applications preinstallees...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v PreInstalledAppsEverEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation des installations silencieuses d'applications...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SilentInstalledAppsEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation de SoftLanding et du contenu abonne...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SoftLandingEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContentEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation des differents contenus abonnes (IDs specifiques)...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-310093Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-338387Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-338388Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-338389Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-338393Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-353694Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-353696Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation des suggestions dans le panneau systeme...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SystemPaneSuggestionsEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Application des memes reglages au profil par defaut...
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v FeatureManagementEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v OemPreInstalledAppsEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v PreInstalledAppsEverEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SilentInstalledAppsEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SoftLandingEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContentEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation des contenus abonnes (profil par defaut)...
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-310093Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-338387Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-338388Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-338389Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-338393Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-353694Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SubscribedContent-353696Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager" /v SystemPaneSuggestionsEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Suppression des sous-cles Subscriptions et SuggestedApps pour l'utilisateur courant...
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\Subscriptions" /f >nul 2>&1
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\SuggestedApps" /f >nul 2>&1
+
+echo Suppression des sous-cles Subscriptions et SuggestedApps pour le profil par defaut...
+reg delete "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\Subscriptions" /f >nul 2>&1
+reg delete "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager\SuggestedApps" /f >nul 2>&1
+
+echo Desactivation du contenu lie a l'etat du compte consommateur...
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v DisableConsumerAccountStateContent /t REG_DWORD /d 1 /f >nul 2>&1
+
+echo Desactivation du contenu optimise pour le cloud...
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v DisableCloudOptimizedContent /t REG_DWORD /d 1 /f >nul 2>&1
+
+echo Desactivation de PushToInstall (poussee d'installations sur le Store)
+reg add "HKLM\SOFTWARE\Policies\Microsoft\PushToInstall" /v DisablePushToInstall /t REG_DWORD /d 1 /f >nul 2>&1
+
+echo Parametrage de la telemetrie...
+
+echo Desactivation de la telemetrie principale...
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f >nul 2>&1 
+reg add "HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation de la publicite et collecte de donnees utilisateur (session en cours)...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" /v Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Privacy" /v TailoredExperiencesWithDiagnosticDataEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" /v HasAccepted /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Input\TIPC" /v Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation de la personnalisation basee sur la saisie (session en cours)...
+reg add "HKCU\Software\Microsoft\InputPersonalization" /v RestrictImplicitInkCollection /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\InputPersonalization" /v RestrictImplicitTextCollection /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\InputPersonalization\TrainedDataStore" /v HarvestContacts /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Refus de la politique de confidentialite personnalisee (session en cours)...
+reg add "HKCU\Software\Microsoft\Personalization\Settings" /v AcceptedPrivacyPolicy /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation de la publicite et collecte de donnees utilisateur (profil par defaut)...
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\AdvertisingInfo" /v Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\Privacy" /v TailoredExperiencesWithDiagnosticDataEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Speech_OneCore\Settings\OnlineSpeechPrivacy" /v HasAccepted /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Input\TIPC" /v Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation de la personnalisation basee sur la saisie (profil par defaut)...
+reg add "HKLM\DefUser\Software\Microsoft\InputPersonalization" /v RestrictImplicitInkCollection /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\InputPersonalization" /v RestrictImplicitTextCollection /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\InputPersonalization\TrainedDataStore" /v HarvestContacts /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Refus de la politique de confidentialite personnalisee (profil par defaut)...
+reg add "HKLM\DefUser\Software\Microsoft\Personalization\Settings" /v AcceptedPrivacyPolicy /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Application de strategies de groupe pour limiter la telemetrie...
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v LimitEnhancedDiagnosticDataWindowsAnalytics /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v LimitDiagnosticLogCollection /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v LimitDumpCollection /t REG_DWORD /d 1 /f >nul 2>&1
+
+echo Desactivation du reporting d'erreurs Windows envoye a Microsoft ...
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting" /v LoggingDisabled /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Error Reporting" /v DontSendAdditionalData /t REG_DWORD /d 1 /f >nul 2>&1
+
+echo Desactivation et arret du service de telemetrie 'DiagTrack'...
+sc config "DiagTrack" start=disabled >nul 2>&1
+sc stop "DiagTrack" >nul 2>&1
+
+
+echo Desactivation de Windows Spotlight features...
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsSpotlightFeatures /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKU\.DEFAULT\Software\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsSpotlightFeatures /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsSpotlightWindowsWelcomeExperience /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKU\.DEFAULT\Software\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsSpotlightWindowsWelcomeExperience /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsSpotlightOnActionCenter /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKU\.DEFAULT\Software\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsSpotlightOnActionCenter /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsSpotlightOnSettings /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKU\.DEFAULT\Software\Policies\Microsoft\Windows\CloudContent" /v DisableWindowsSpotlightOnSettings /t REG_DWORD /d 1 /f >nul 2>&1
+
+echo Desactivation de Bing in Start Menu...
+reg add "HKCU\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\Software\Policies\Microsoft\Windows\Explorer" /v DisableSearchBoxSuggestions /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Policies\Microsoft\Windows\Explorer" /v ShowRunAsDifferentUserInStart /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Policies\Microsoft\Windows\Explorer" /v DisableSearchBoxSuggestions /t REG_DWORD /d 1 /f >nul 2>&1
+REG ADD "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v ConnectedSearchUseWebOverMeteredConnections /t REG_DWORD /d 0 /f >nul 2>&1
+REG ADD "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v AllowCortana /t REG_DWORD /d 0 /f >nul 2>&1
+REG ADD "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v DisableWebSearch /t REG_DWORD /d 1 /f >nul 2>&1
+REG ADD "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v ConnectedSearchUseWeb /t REG_DWORD /d 0 /f >nul 2>&1
+REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" /v CortanaConsent /t REG_DWORD /d 0 /f >nul 2>&1 
+REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" /v BingSearchEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" /v AllowSearchToUseLocation /t REG_DWORD /d 0 /f >nul 2>&1
+REG ADD "HKLM\DefUser\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" /v CortanaConsent /t REG_DWORD /d 0 /f >nul 2>&1
+REG ADD "HKLM\DefUser\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" /v BingSearchEnabled /t REG_DWORD /d 0 /f >nul 2>&1
+REG ADD "HKLM\DefUser\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" /v AllowSearchToUseLocation /t REG_DWORD /d 0 /f >nul 2>&1
+
+
+echo Deleting Application Compatibility Appraiser...
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\{0600DD45-FAF2-4131-A006-0B17509B9F78}" /f >nul 2>&1
+
+echo Deleting Customer Experience Improvement Program...
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\{4738DE7A-BCC1-4E2D-B1B0-CADB044BFA81}" /f >nul 2>&1
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\{6FAC31FA-4A85-4E64-BFD5-2154FF4594B3}" /f >nul 2>&1
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Schedule\TaskCache\Tasks\{FC931F16-B50A-472E-B061-B6F79A71EF59}" /f >nul 2>&1
+
+echo Desactivation de .NET Optimization Service (NGEN)...
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\CI\NGEN" /v "C:\Windows\Microsoft.NET\Framework\v4.0.30319\mscorsvw.exe" /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\CI\NGEN" /v "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\mscorsvw.exe" /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Desactivation de NVMe Perf Throttling...
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\Classpnp" /v NVMeDisablePerfThrottling /t REG_DWORD /d 1 /f >nul 2>&1
+
+echo Desactivation de FTH (Fault Tolerant Heap)...
+reg add "HKLM\SOFTWARE\Microsoft\FTH" /v Enabled /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Supression de Galerie du nav panel de l'explorateur de fichier...
+reg add "HKCU\Software\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}" /v System.IsPinnedToNameSpaceTree /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Classes\CLSID\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}" /v System.IsPinnedToNameSpaceTree /t REG_DWORD /d 0 /f >nul 2>&1
+reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}" /f >nul 2>&1
+
+echo Supression de Accueil du nav panel de l'explorateur de fichier...
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}" /f >nul 2>&1
+
+echo Desactivation de SysMain... 
+sc config "SysMain" start=disabled >nul 2>&1
+sc stop SysMain >nul 2>&1
+
+echo Application de SvcHostSplit pour reduire le nombre de SvcHost...
+for /f "tokens=*" %%p in ('powershell -NoProfile -Command "& {(Get-CimInstance -ClassName Win32_OperatingSystem).TotalVisibleMemorySize}"') do (
+    set m=%%p
+    goto :done
+)
+:done
+set "HEX=%m%"
+
+set /A DEC=0x%HEX%
+
+reg add "HKLM\SYSTEM\CurrentControlSet\Control" /v SvcHostSplitThresholdInKB /t REG_DWORD /d "%DEC%" /f >nul 2>&1	
+
+echo Changement des priorite CPU du Scheduler...
+reg add "HKLM\SYSTEM\ControlSet001\Control\PriorityControl" /v Win32PrioritySeparation /t REG_DWORD /d 38 /f >nul 2>&1
+
+echo Application de WLAN Tweaks...
+reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v L2NAWLANMode /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v AllowAPMode /t REG_BINARY /d 01000000 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v DisableBackgroundScanOptimization /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v ShowDeniedNetworks /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Wlansvc" /v AllowVirtualStationExtensibility /t REG_DWORD /d 0 /f >nul 2>&1
+
+echo Application de NTFS Tweaks (reduce I/O)...
+fsutil behavior set disableLastAccess 1 >NUL 2>nul
+fsutil behavior set disable8dot3 1 >NUL 2>nul
+
+echo Reinitilisation de Hibernation...
+powercfg -h off >nul 2>&1
+powercfg -h on >nul 2>&1
+
+echo Activation de Fast Startup...
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "EnableFastStartup" /t REG_DWORD /d "1" /f >nul 2>&1
+
+echo Application de Boot Tweaks... (Speed up the Winlogon)
+Reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "DelayedDesktopSwitchTimeout" /t REG_DWORD /d "0" /f >nul 2>&1
+Reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize" /v "StartupDelayInMSec" /t REG_SZ /d "0" /f >nul 2>&1
+Reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "RunStartupScriptSync" /t REG_DWORD /d "0" /f >nul 2>&1
+bcdedit /set bootmenupolicy legacy >nul 2>&1
+Reg add "HKCU\Control Panel\Desktop" /v "MenuShowDelay" /t REG_SZ /d "0" /f >nul 2>&1
+reg add "HKLM\DefUser\Control Panel\Desktop" /v "MenuShowDelay" /t REG_SZ /d "0" /f >nul 2>&1
+
+echo Application de Shutdown Tweaks... (Speed up the Shutdown)
+Reg add "HKCU\Control Panel\Desktop" /v "WaitToKillAppTimeout" /t REG_SZ /d "1000" /f >nul 2>&1
+reg add "HKLM\DefUser\Control Panel\Desktop" /v "WaitToKillAppTimeout" /t REG_SZ /d "1000" /f >nul 2>&1
+Reg add "HKLM\System\CurrentControlSet\Control" /v "WaitToKillServiceTimeout" /t REG_SZ /d "1000" /f >nul 2>&1
+Reg add "HKCU\Control Panel\Desktop" /v "AutoEndTasks" /t REG_SZ /d "1" /f >nul 2>&1
+reg add "HKLM\DefUser\Control Panel\Desktop" /v "AutoEndTasks" /t REG_SZ /d "1" /f >nul 2>&1
+Reg add "HKCU\Control Panel\Desktop" /v "HungAppTimeout" /t REG_SZ /d "1000" /f >nul 2>&1
+reg add "HKLM\DefUser\Control Panel\Desktop" /v "HungAppTimeout" /t REG_SZ /d "1000" /f >nul 2>&1
+
+echo Activation de Ultimate Performance Plan... 
+powercfg /duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61 99999999-9999-9999-9999-999999999999 >nul 2>&1
+powercfg /SETACTIVE 99999999-9999-9999-9999-999999999999 >nul 2>&1
+
+echo Desactivation de MemoryCompression... (Reduce CPU Usage)
+PowerShell -Command "Disable-MMAgent -MemoryCompression" >nul 2>&1
+PowerShell -Command "Disable-MMAgent -PageCombining" >nul 2>&1
+
+echo Nettoyage de WinSxS...
+Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase >nul 2>&1
+
+echo Nettoyage...
+cleanmgr /sagerun:50 >nul 2>&1
+
+echo Remove C:\Program Files (x86)\Microsoft\EdgeUpdate...
+takeown /f "C:\Program Files (x86)\Microsoft\EdgeUpdate" /r >nul 2>&1
+rmdir /q /s "C:\Program Files (x86)\Microsoft\EdgeUpdate" >nul 2>&1
+
+echo Remove C:\Program Files (x86)\Microsoft\EdgeWebView...
+takeown /f "C:\Program Files (x86)\Microsoft\EdgeWebView" /r >nul 2>&1
+rmdir /q /s "C:\Program Files (x86)\Microsoft\EdgeWebView" >nul 2>&1
+
+echo Supression du dossier temporaire C:\Perflogs...
+rmdir /q /s "C:\Perflogs" >nul 2>&1
+
+echo Remove %APPDATA%\Edge Folder...
+rmdir /q /s "%LOCALAPPDATA%\Microsoft\Edge\" >nul 2>&1
+
+echo Supression des fichiers temporaires...
+del /q /f /s %TEMP%\* >nul 2>&1
+del /q /f /s C:\Windows\Temp\* >nul 2>&1
+del /q /f /s C:\Users\%USERNAME%\AppData\Local\Temp\* >nul 2>&1
+
+echo Supression des Logs...
+del /f /q C:\Windows\System32\winevt\Logs\* >nul 2>&1
+
+REM Compacting Windows... (Optional use more CPU)
+REM compact /compactos:always >nul 2>&1
+
+echo Nettoyage de la Taskbar...
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v ShowTaskViewButton /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v ShowTaskViewButton /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarDa /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarDa /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarMn /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarMn /t REG_DWORD /d 0 /f >nul 2>&1
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" /f >nul 2>&1
+reg delete "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" /f >nul 2>&1
+powershell.exe -ExecutionPolicy Bypass -File "%~dp0\Taskbar_Layout.ps1"
+
+echo Restauration du clique droit de Windows 10 (Legacy)...
+reg add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /ve /d "" /f >nul 2>&1
+reg add "HKLM\DefUser\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /ve /d "" /f >nul 2>&1
+
+echo Application des Tweaks pour skip OOBE (Pour utiliser le script depuis OOBE)...
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE" /v BypassNRO /t REG_DWORD /d 1 /f >nul 2>&1
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v DisableVoice /t REG_DWORD /d 1 /f >nul 2>&1
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v HideEULAPage /t REG_DWORD /d 1 /f >nul 2>&1
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v HideOEMRegistrationScreen /t REG_DWORD /d 1 /f >nul 2>&1
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v HideOnlineAccountScreens /t REG_DWORD /d 1 /f >nul 2>&1
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v HideWirelessSetupInOOBE /t REG_DWORD /d 1 /f >nul 2>&1
+reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v ProtectYourPC /t REG_DWORD /d 3 /f >nul 2>&1
+reg add HKEY_LOCAL_MACHINE\SYSTEM\Setup /v OOBEInProgress /t REG_DWORD /d 0 /f >nul 2>&1
+reg add HKEY_LOCAL_MACHINE\SYSTEM\Setup /v OOBEInProgressDriverUpdatesPostponed /t REG_DWORD /d 0 /f >nul 2>&1
+reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v LaunchUserOOBE /f >nul 2>&1
+reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v DefaultAccountAction /f >nul 2>&1
+reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v RecoveryOOBEEnabled /f >nul 2>&1
+reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v DefaultAccountSAMName /f >nul 2>&1
+reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v DefaultAccountSID /f >nul 2>&1
+net user /del defaultuser0 >nul 2>&1
+net user /add MOVLOCALPC >nul 2>&1
+net localgroup Administrateurs /add MOVLOCALPC >nul 2>&1
+
+echo Decharger la ruche...
+reg unload "HKLM\DefUser" >nul 2>&1
+
+echo Redemarrer le PC avec shutdown /t 0 /r
+
+
+
+
