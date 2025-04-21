@@ -112,6 +112,7 @@ SkypeApp;^
 People;^
 ZuneMusic;^
 ZuneVideo;^
+Microsoft.YourPhone;^
 MicrosoftSolitaireCollection;^
 BingNews;^
 BingWeather;^
@@ -431,6 +432,9 @@ powercfg /SETACTIVE 99999999-9999-9999-9999-999999999999 >nul 2>&1
 echo Desactivation de MemoryCompression... (Reduce CPU Usage)
 PowerShell -Command "Disable-MMAgent -MemoryCompression" >nul 2>&1
 PowerShell -Command "Disable-MMAgent -PageCombining" >nul 2>&1
+
+echo Desactivation de ReservedStorage WinSxS...
+dism /Online /Set-ReservedStorageState /State:Disabled
 
 echo Nettoyage de WinSxS...
 Dism.exe /online /Cleanup-Image /StartComponentCleanup /ResetBase >nul 2>&1
