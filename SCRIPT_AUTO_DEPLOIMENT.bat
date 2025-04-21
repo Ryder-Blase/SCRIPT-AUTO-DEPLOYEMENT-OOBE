@@ -99,53 +99,48 @@ echo Changement du Nom du PC...
 set /p PCNAME=Nom du PC :
 powershell -Command "Rename-Computer -NewName "%PCNAME%" -Force" >nul 2>&1
 
-REM echo Suppression des apps inutiles...
-REM setlocal enabledelayedexpansion
-REM set apps=^
-REM 3DBuilder;^
-REM xbox;^
-REM Microsoft.Xbox.TCUI;^
-REM Microsoft.XboxIdentityProvider;^
-REM Microsoft.XboxSpeechTotextOverlay;^
-REM OneNote;^
-REM SkypeApp;^
-REM People;^
-REM ZuneMusic;^
-REM ZuneVideo;^
-REM Microsoft.YourPhone;^
-REM MicrosoftSolitaireCollection;^
-REM BingNews;^
-REM BingWeather;^
-REM Microsoft.BingSearch;^
-REM Microsoft.XboxGamingOverlay;^
-REM linkedin;^
-REM Microsoft.GamingApp;^
-REM Microsoft.PowerAutomateDesktop;^
-REM Microsoft.StorePurchaseApp;^
-REM HolographicFirstRun;^
-REM Microsoft.GetHelp;^
-REM Microsoft.Getstarted;^
-REM Microsoft.MicrosoftStickyNotes;^
-REM Microsoft.MixedReality.Portal;^
-REM Microsoft.Microsoft3DViewer;^
-REM Microsoft.Windows.DevHome;^
-REM Microsoft.MicrosoftOfficeHub;^
-REM Microsoft.Copilot;^
-REM Copilot;^
-REM OneConnect;^
-REM Clipchamp;^
-REM soundrecorder;^
-REM Microsoft.WindowsFeedbackHub
-REM for %%A in (%apps%) do (
-REM     echo Supression de %%A...
-REM    powershell -Command "Get-AppxPackage -AllUsers *%%A* | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue" >nul 2>&1
+ echo Suppression des apps inutiles...
+ setlocal enabledelayedexpansion
+ set apps=^
+ 3DBuilder;^
+ xbox;^
+ Microsoft.Xbox.TCUI;^
+ Microsoft.XboxIdentityProvider;^
+ Microsoft.XboxSpeechTotextOverlay;^
+ OneNote;^
+ SkypeApp;^
+ People;^
+ ZuneMusic;^
+ ZuneVideo;^
+ Microsoft.YourPhone;^
+ MicrosoftSolitaireCollection;^
+ BingNews;^
+ BingWeather;^
+ Microsoft.BingSearch;^
+ Microsoft.XboxGamingOverlay;^
+ linkedin;^
+ Microsoft.GamingApp;^
+ Microsoft.PowerAutomateDesktop;^
+ Microsoft.StorePurchaseApp;^
+ HolographicFirstRun;^
+ Microsoft.GetHelp;^
+ Microsoft.Getstarted;^
+ Microsoft.MicrosoftStickyNotes;^
+ Microsoft.MixedReality.Portal;^
+ Microsoft.Microsoft3DViewer;^
+ Microsoft.Windows.DevHome;^
+ Microsoft.MicrosoftOfficeHub;^
+ Microsoft.Copilot;^
+ Copilot;^
+ OneConnect;^
+ Clipchamp;^
+ soundrecorder;^
+ Microsoft.WindowsFeedbackHub
+ for %%A in (%apps%) do (
+     echo Supression de %%A...
+    powershell -Command "Get-AppxPackage -AllUsers *%%A* | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue" >nul 2>&1
     REM (Sysprep bug) powershell -Command "Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like '*%%A*' | Remove-AppxProvisionedPackage -AllUsers -Online -ErrorAction SilentlyContinue" >nul 2>&1
-REM )
-
-echo Suppression des apps inutiles...
-powershell -Command "Get-AppxPackage | Remove-AppxPackage" >NUL 2>&1
-powershell -Command "Get-AppxPackage -AllUsers | Remove-AppxPackage" >NUL 2>&1
-powershell -Command "Get-AppxProvisionedPackage -Online | Remove-AppxProvisionedPackage" -Online >NUL 2>&1 REM (Sysprep Bug)
+)
 
 echo Suppression des Widgets Windows...
 powershell -Command "Get-AppxPackage *WebExperience* | Remove-AppxPackage -AllUsers" >nul 2>&1
