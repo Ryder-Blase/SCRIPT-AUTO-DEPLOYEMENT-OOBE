@@ -39,7 +39,7 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Control\LabConfig" /v BypassStorageCheck 
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\LabConfig" /v BypassTPMCheck /t REG_DWORD /d 1 /f >nul 2>&1
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\MoSetup" /v AllowUpgradesWithUnsupportedTPMOrCPU /t REG_DWORD /d 1 /f >nul 2>&1
 
-echo Supprimer Microsoft Edge...
+echo Supression de Microsoft Edge...
  reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge" /f >nul 2>&1
  reg delete "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Microsoft Edge Update" /f >nul 2>&1
 
@@ -59,7 +59,7 @@ echo Supprimer Microsoft Edge...
  start /w "" "%~dp0\Uninstall_Edge\Setup_Edge.exe" --uninstall --system-level --force-uninstall
 
  :uninst_wv
- echo Supprimer WebView
+ echo Supression de WebView
  where /q "%ProgramFiles(x86)%\Microsoft\EdgeWebView\Application:*"
  if %errorlevel% neq 0 goto cleanup_wv_junk
  start /w "" "%~dp0\Uninstall_Edge\Setup_Edge.exe" --uninstall --msedgewebview --system-level --force-uninstall
@@ -135,7 +135,7 @@ powershell -Command "Rename-Computer -NewName "%PCNAME%" -Force" >nul 2>&1
     REM (Sysprep bug) powershell -Command "Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like '*%%A*' | Remove-AppxProvisionedPackage -AllUsers -Online -ErrorAction SilentlyContinue" >nul 2>&1
 )
 
-echo Suppression des Widgets Windows...
+echo Supression des Widgets Windows...
 powershell -Command "Get-AppxPackage *WebExperience* | Remove-AppxPackage -AllUsers" >nul 2>&1
 REM (Sysprep bug) powershell -Command "Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like "*WebExperience*" | Remove-AppxProvisionedPackage -Online -AllUsers" >nul 2>&1
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Dsh" /v AllowNewsAndInterests /t REG_DWORD /d 0 /f >nul 2>&1
