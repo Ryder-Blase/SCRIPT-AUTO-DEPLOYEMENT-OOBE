@@ -406,6 +406,10 @@ echo Desactivation de Windows Search...
 sc config "WSearch" start=disabled >nul 2>&1
 sc stop "WSearch" >nul 2>&1
 
+echo Set Print Spooler to Manual...
+sc config "Spooler" start=demand >nul 2>&1
+sc stop "Spooler" >nul 2>&1
+
 echo Direct3D Tweaks...
 Reg add "HKLM\SOFTWARE\Microsoft\Direct3D" /v "FullDebug" /t REG_DWORD /d "0" /f >nul 2>&1
 Reg add "HKLM\SOFTWARE\Microsoft\Direct3D" /v "DisableDM" /t REG_DWORD /d "1" /f >nul 2>&1
