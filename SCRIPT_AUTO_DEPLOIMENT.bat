@@ -402,6 +402,9 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl" /v "EnablePriori
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\PriorityControl" /v "ThreadPrioritization" /t REG_DWORD /d 255 /f >nul 2>&1
 reg add "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Executive" /v "RealTimePriorityBoost" /t REG_DWORD /d 1 /f >nul 2>&1
 
+echo Desactivation de Windows Search...
+sc config "WSearch" start=disabled >nul 2>&1
+sc stop "WSearch" >nul 2>&1
 
 echo Direct3D Tweaks...
 Reg add "HKLM\SOFTWARE\Microsoft\Direct3D" /v "FullDebug" /t REG_DWORD /d "0" /f >nul 2>&1
