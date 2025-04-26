@@ -142,6 +142,46 @@ reg add "HKLM\SOFTWARE\Policies\Microsoft\Dsh" /v AllowNewsAndInterests /t REG_D
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds" /v EnableFeeds /t REG_DWORD /d 0 /f >nul 2>&1
 reg add "HKLM\DefUser\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v TaskbarDa /t REG_DWORD /d 0 /f >nul 2>&1
 
+:: Get Windows build number using PowerShell (since wmic is deprecated)
+for /f %%a in ('powershell -NoProfile -Command "[Environment]::OSVersion.Version.Build"') do (
+    set "build=%%a"
+)
+
+:: Show build number
+echo Build number detected: !build!
+
+:: Validate number
+set /a buildCheck=!build! 2>nul
+if "!buildCheck!"=="" (
+    echo Build number is not a valid number.
+    pause
+    exit /b 1
+)
+
+if !buildCheck! GEQ 22000 (
+    echo Windows 11 or Server 2022+ detected. Installing StartAllBack...
+    powershell -Command "Invoke-WebRequest -Uri 'https://startisback.sfo3.cdn.digitaloceanspaces.com/StartAllBack_3.9.8_setup.exe' -OutFile '%TEMP%\startallback.exe'" >nul 2>&1
+    start /wait "" "%TEMP%\startallback.exe" >nul 2>&1
+) else (
+    echo Windows 10 or lower detected. Installing StartIsBack...
+    powershell -Command "Invoke-WebRequest -Uri 'https://startisback.sfo3.cdn.digitaloceanspaces.com/StartIsBackPlusPlus_setup.exe' -OutFile '%TEMP%\startisback.exe'" >nul 2>&1
+    start /wait "" "%TEMP%\startisback.exe" >nul 2>&1
+)
+
+echo Desactivation du Shell etc ... (SystemApps)
+taskkill /f /im ShellExperienceHost.exe >nul 2>&1
+NSudo.exe -U:T -P:E cmd.exe /c move "C:\Windows\SystemApps\ShellExperienceHost_cw5n1h2txyewy" "C:\Windows\SystemApps\ShellExperienceHost_cw5n1h2txyewy.old" 
+taskkill /f /im StartMenuExperienceHost.exe >nul 2>&1
+NSudo.exe -U:T -P:E cmd.exe /c move "C:\Windows\SystemApps\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy" "C:\Windows\SystemApps\Microsoft.Windows.StartMenuExperienceHost_cw5n1h2txyewy.old" 
+taskkill /f /im SearchApp.exe >nul 2>&1 
+NSudo.exe -U:T -P:E cmd.exe /c move "C:\Windows\SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy" "C:\Windows\SystemApps\Microsoft.Windows.Search_cw5n1h2txyewy.old" 
+taskkill /f /im TextInputHost.exe >nul 2>&1
+NSudo.exe -U:T -P:E cmd.exe /c move "C:\Windows\SystemApps\MicrosoftWindows.Client.CBS_cw5n1h2txyewy" "C:\Windows\SystemApps\MicrosoftWindows.Client.CBS_cw5n1h2txyewy.old" 
+NSudo.exe -U:T -P:E cmd.exe /c reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Control Panel\Settings\Network" /v ReplaceVan /t REG_DWORD /d 2 /f 
+NSudo.exe -U:T -P:E cmd.exe /c reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\MTCUVC" /v EnableMtcUvc /t REG_DWORD /d 0 /f 
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v UseWin32TrayClockExperience /t REG_DWORD /d 1 /f >nul 2>&1
+taskkill /f /im ShellHost.exe >nul 2>&1
+NSudo.exe -U:T -P:E cmd.exe /c move "C:\Windows\System32\ShellHost.exe" "C:\Windows\System32\ShellHost.exe.old"
 
 echo Desactiver la reinstallation de DevHome...
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Orchestrator\UScheduler\DevHomeUpdate" /v workCompleted /t REG_DWORD /d 1 /f >nul 2>&1
