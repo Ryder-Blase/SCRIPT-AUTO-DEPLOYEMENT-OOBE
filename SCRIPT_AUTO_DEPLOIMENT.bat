@@ -580,7 +580,7 @@ goto :EOF
 :ControlSet
 rem Set registry key values
 rem Parameters: %1 - registry path, %2 - key name, %3 - key value
-reg add "HKLM\SYSTEM\CurrentControlSet\%1" /v %2 /t REG_DWORD /d %3 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\%1" /v %2 /t REG_DWORD /d %3 /f 
 
 
 echo Reinitilisation de Hibernation...
