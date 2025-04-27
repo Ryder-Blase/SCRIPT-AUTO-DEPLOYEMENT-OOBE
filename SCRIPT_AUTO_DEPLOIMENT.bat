@@ -415,6 +415,18 @@ echo Desactivation de SysMain...
 sc config "SysMain" start=disabled >nul 2>&1
 sc stop SysMain >nul 2>&1
 
+echo Desactivation de DPS... 
+sc config "DPS" start=disabled >nul 2>&1
+sc stop DPS >nul 2>&1
+
+echo Desactivation de DPS... 
+sc config "DPS" start=disabled >nul 2>&1
+sc stop DPS >nul 2>&1
+
+echo Desactivation de WerSvc... 
+sc config "WerSvc" start=disabled >nul 2>&1
+sc stop WerSvc >nul 2>&1
+
 echo Application de SvcHostSplit pour reduire le nombre de SvcHost...
 for /f "tokens=*" %%p in ('powershell -NoProfile -Command "& {(Get-CimInstance -ClassName Win32_OperatingSystem).TotalVisibleMemorySize}"') do (
     set m=%%p
