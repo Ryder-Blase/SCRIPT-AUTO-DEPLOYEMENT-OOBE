@@ -707,6 +707,8 @@ echo Decharger la ruche...
 reg unload "HKLM\DefUser" >nul 2>&1
 
 echo Redemarrer le PC avec shutdown /t 0 /r
+pause
+shutdown /t 0 /r >nul 2>&1
 
 
 
