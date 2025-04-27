@@ -201,6 +201,7 @@ NSudo.exe -U:T -P:E cmd.exe /c reg add "HKLM\SOFTWARE\Microsoft\Windows NT\Curre
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v UseWin32TrayClockExperience /t REG_DWORD /d 1 /f >nul 2>&1
 taskkill /f /im ShellHost.exe >nul 2>&1
 NSudo.exe -U:T -P:E cmd.exe /c move "C:\Windows\System32\ShellHost.exe" "C:\Windows\System32\ShellHost.exe.old"
+schtasks /Change /TN "Microsoft\Windows\Server Manager\ServerManager"  /Disable >nul 2>&1
 
 echo Desactiver la reinstallation de DevHome...
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Orchestrator\UScheduler\DevHomeUpdate" /v workCompleted /t REG_DWORD /d 1 /f >nul 2>&1
