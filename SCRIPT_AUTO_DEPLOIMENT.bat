@@ -682,6 +682,11 @@ REM reg delete HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE
 REM net user /del defaultuser0 >nul 2>&1
 REM net user Administrateur /active:yes
 
+echo Installation de WinMemoryCleaner pour clear /ModifiedPageList /ProcessesWorkingSet /StandbyList /SystemWorkingSet ...
+powershell -Command "Invoke-WebRequest -Uri 'https://github.com/IgorMundstein/WinMemoryCleaner/releases/download/2.8/WinMemoryCleaner.exe' -OutFile '%SYSTEMDRIVE%\WinMemoryCleaner.exe'" >nul 2>&1
+C:\WinMemoryCleaner.exe /ModifiedPageList /ProcessesWorkingSet /StandbyList /SystemWorkingSet >nul 2>&1
+echo C:\WinMemoryCleaner.exe /ModifiedPageList /ProcessesWorkingSet /StandbyList /SystemWorkingSet C:\WinMemoryCleaner.exe /ModifiedPageList /ProcessesWorkingSet /StandbyList /SystemWorkingSet C:\WinMemoryCleaner.exe /ModifiedPageList /ProcessesWorkingSet /StandbyList /SystemWorkingSet > "%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\script.bat"
+
 echo Decharger la ruche...
 reg unload "HKLM\DefUser" >nul 2>&1
 
