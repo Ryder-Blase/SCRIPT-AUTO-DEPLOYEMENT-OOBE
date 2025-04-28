@@ -245,6 +245,14 @@ reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.xml\U
 reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.pdf\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
 reg add "HKLM\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.svf\UserChoice" /v Progid /t REG_SZ /d "ChromeHTML" /f >nul 2>&1
 
+echo Installation de 7-Zip...
+powershell -Command "Invoke-WebRequest -Uri 'https://www.7-zip.org/a/7z2409-x64.exe' -OutFile '%TEMP%\7z2409-x64.exe'" >nul 2>&1
+start /wait "" "%TEMP%\7z2409-x64.exe" /S >nul 2>&1
+
+echo Installation de DirectX...
+powershell -Command "Invoke-WebRequest -Uri 'https://download.microsoft.com/download/1/7/1/1718ccc4-6315-4d8e-9543-8e28a4e18c4c/dxwebsetup.exe' -OutFile '%TEMP%\dxwebsetup.exe'" >nul 2>&1
+start /wait "" "%TEMP%\dxwebsetup.exe" /Q >nul 2>&1
+
 echo Desactivation des Sponsored Apps (applications sponsorisees pour prevenir les pubs et les apps non desire)...
 
 echo Desactivation de WindowsConsumerFeatures...
