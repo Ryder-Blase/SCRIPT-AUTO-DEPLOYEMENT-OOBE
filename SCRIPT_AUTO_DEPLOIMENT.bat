@@ -705,8 +705,10 @@ del /q /f /s C:\Users\%USERNAME%\AppData\Local\Temp\* >nul 2>&1
 echo Supression des Logs...
 del /f /q C:\Windows\System32\winevt\Logs\* >nul 2>&1
 
-REM Compacting Windows... (Optional use more CPU)
-REM compact /compactos:always >nul 2>&1
+echo Compacting Windows... (Optional use more CPU)
+NSudo.exe -U:T -P:E cmd.exe /c c:
+NSudo.exe -U:T -P:E cmd.exe /c compact /s /c /a /i /f /EXE:LZX
+
 
 echo Application des Tweaks pour skip OOBE (Pour utiliser le script depuis OOBE)...
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE" /v BypassNRO /t REG_DWORD /d 1 /f >nul 2>&1
@@ -734,9 +736,6 @@ mkdir "C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\St
 copy /y startup.vbs "C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\startup.vbs" >nul 2>&1
 copy /y startup.vbs "\Microsoft\Windows\Start Menu\Programs\Startup\startup.vbs" >nul 2>&1
 copy /y startup.bat "C:\Startup.bat" >nul 2>&1
-
-NSudo.exe -U:T -P:E cmd.exe /c c:
-NSudo.exe -U:T -P:E cmd.exe /c compact /s /c /a /i /f /EXE:LZX
 
 echo Decharger la ruche...
 reg unload "HKLM\DefUser" >nul 2>&1
