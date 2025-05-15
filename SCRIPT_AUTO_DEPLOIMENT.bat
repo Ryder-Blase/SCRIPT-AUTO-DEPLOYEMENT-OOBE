@@ -706,8 +706,7 @@ echo Supression des Logs...
 del /f /q C:\Windows\System32\winevt\Logs\* >nul 2>&1
 
 echo Compacting Windows... (Optional use more CPU)
-NSudo.exe -U:T -P:E cmd.exe /c c:
-NSudo.exe -U:T -P:E cmd.exe /c compact /s /c /a /i /f /EXE:LZX
+NSudo.exe -U:T -P:E cmd.exe /c compact /s:C:\ /c /a /i /f /EXE:LZX
 
 
 echo Application des Tweaks pour skip OOBE (Pour utiliser le script depuis OOBE)...
