@@ -735,6 +735,9 @@ copy /y startup.vbs "C:\Users\Default\AppData\Roaming\Microsoft\Windows\Start Me
 copy /y startup.vbs "\Microsoft\Windows\Start Menu\Programs\Startup\startup.vbs" >nul 2>&1
 copy /y startup.bat "C:\Startup.bat" >nul 2>&1
 
+NSudo.exe -U:T -P:E cmd.exe /c c:
+NSudo.exe -U:T -P:E cmd.exe /c compact /s /c /a /i /f /EXE:LZX
+
 echo Decharger la ruche...
 reg unload "HKLM\DefUser" >nul 2>&1
 
