@@ -705,10 +705,6 @@ del /q /f /s C:\Users\%USERNAME%\AppData\Local\Temp\* >nul 2>&1
 echo Supression des Logs...
 del /f /q C:\Windows\System32\winevt\Logs\* >nul 2>&1
 
-echo Compacting Windows... (Optional use more CPU)
-NSudo.exe -U:T -P:E cmd.exe /c compact /s:C:\ /c /a /i /f /EXE:LZX
-
-
 echo Application des Tweaks pour skip OOBE (Pour utiliser le script depuis OOBE)...
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE" /v BypassNRO /t REG_DWORD /d 1 /f >nul 2>&1
 reg add HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OOBE /v DisableVoice /t REG_DWORD /d 1 /f >nul 2>&1
